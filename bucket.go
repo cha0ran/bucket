@@ -1,6 +1,7 @@
 package bucket
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type bucket struct {
 }
 
 func NewBucket(duration time.Duration, capacity int, quantum int, full bool) *bucket {
-	return &bucket{
+	b := &bucket{
 		capacity:   capacity,
 		quantum:    quantum,
 		duration:   duration,
@@ -24,9 +25,13 @@ func NewBucket(duration time.Duration, capacity int, quantum int, full bool) *bu
 		waitChan:   make(chan struct{}, 1),
 		full:       full,
 	}
+
+	b.start()
+
+	return b
 }
 
-func (b *bucket) Start() {
+func (b *bucket) start() {
 	if b.full {
 		for i := 0; i < b.capacity; i++ {
 			b.tokensChan <- struct{}{}
@@ -37,6 +42,7 @@ func (b *bucket) Start() {
 		ticker := time.NewTicker(b.duration)
 		defer func() {
 			ticker.Stop()
+			fmt.Println("bucket over.")
 			b.waitChan <- struct{}{}
 		}()
 
@@ -58,14 +64,11 @@ func (b *bucket) Start() {
 	}()
 }
 
-func (b *bucket) Stop() {
-	b.closeChan <- struct{}{}
-}
-
 func (b *bucket) Take() {
 	<-b.tokensChan
 }
 
-func (b *bucket) Wait() {
+func (b *bucket) Close() {
+	b.closeChan <- struct{}{}
 	<-b.waitChan
 }
