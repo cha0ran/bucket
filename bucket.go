@@ -1,7 +1,6 @@
 package bucket
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -42,7 +41,6 @@ func (b *bucket) start() {
 		ticker := time.NewTicker(b.duration)
 		defer func() {
 			ticker.Stop()
-			fmt.Println("bucket over.")
 			b.waitChan <- struct{}{}
 		}()
 
