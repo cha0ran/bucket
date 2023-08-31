@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type bucket struct {
+type Bucket struct {
 	capacity   int
 	quantum    int
 	duration   time.Duration
@@ -14,8 +14,8 @@ type bucket struct {
 	full       bool
 }
 
-func NewBucket(duration time.Duration, capacity int, quantum int, full bool) *bucket {
-	b := &bucket{
+func NewBucket(duration time.Duration, capacity int, quantum int, full bool) *Bucket {
+	b := &Bucket{
 		capacity:   capacity,
 		quantum:    quantum,
 		duration:   duration,
@@ -30,7 +30,7 @@ func NewBucket(duration time.Duration, capacity int, quantum int, full bool) *bu
 	return b
 }
 
-func (b *bucket) start() {
+func (b *Bucket) start() {
 	if b.full {
 		for i := 0; i < b.capacity; i++ {
 			b.tokensChan <- struct{}{}
@@ -62,11 +62,11 @@ func (b *bucket) start() {
 	}()
 }
 
-func (b *bucket) Take() {
+func (b *Bucket) Take() {
 	<-b.tokensChan
 }
 
-func (b *bucket) Close() {
+func (b *Bucket) Close() {
 	b.closeChan <- struct{}{}
 	<-b.waitChan
 }
